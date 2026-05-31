@@ -1,0 +1,80 @@
+{
+  "info": {
+    "_postman_id": "a3c7859c-02b4-40f6-b02f-e2db87081426",
+    "name": "WAD02-Capstone-Lab 1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48850111",
+    "_collection_link": "https://go.postman.co/collection/48850111-a3c7859c-02b4-40f6-b02f-e2db87081426?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "API info",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "GET http://localhost:3000/api/echo/hello",
+          "protocol": "GET http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "echo",
+            "hello"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Echo Uppercase",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Echo Message",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/echo/hello",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "echo",
+            "hello"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
