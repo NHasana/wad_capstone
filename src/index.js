@@ -1,15 +1,25 @@
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
+
 const express = require("express");
 const routes = require("./routes");
 const config = require("./config");
+const tasksRoutes = require("./routes/tasks.routes");
 
 const app = express();
 
 app.use(express.json());
 
-// pakai semua routes
+// route lama
 app.use("/", routes);
 
-// 404 handler (kalau route tidak ada)
+// route tasks
+app.use("/api/v1/tasks", tasksRoutes);
+
+// swagger docs
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
@@ -17,7 +27,7 @@ app.use((req, res) => {
   });
 });
 
-// 500 handler (kalau server error)
+// 500 handler
 app.use((err, req, res, next) => {
   res.status(500).json({
     status: "error",
