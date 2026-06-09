@@ -1,115 +1,102 @@
-const store = require("../data/tasks.store");
+const taskRepository = require("../repositories/task.repository");
 
-const getTasks = (req, res) => {
-  const {
-    status,
-    limit = 10,
-    offset = 0,
-    sort = "id",
-    order = "asc",
-  } = req.query;
+const getTasks = async (req, res, next) => {
+  try {
+    const tasks = await taskRepository.findMany();
 
-  let tasks = store.findAll();
-
-  // filter status
-  if (status) {
-    tasks = tasks.filter(
-      (task) => task.status === status
-    );
-  }
-
-  // sorting
-  tasks.sort((a, b) => {
-    if (a[sort] < b[sort]) {
-      return order === "asc" ? -1 : 1;
-    }
-
-    if (a[sort] > b[sort]) {
-      return order === "asc" ? 1 : -1;
-    }
-
-    return 0;
-  });
-
-  // pagination
-  const paginatedTasks = tasks.slice(
-    Number(offset),
-    Number(offset) + Number(limit)
-  );
-
-  res.json({
-    data: paginatedTasks,
-    pagination: {
-      limit: Number(limit),
-      offset: Number(offset),
-      total: tasks.length,
-    },
-  });
-};
-
-const getTaskById = (req, res) => {
-  const task = store.findById(req.params.id);
-
-  if (!task) {
-    return res.status(404).json({
-      message: "Task not found",
+    res.json({
+      data: tasks,
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.json({
-    data: task,
-  });
 };
 
-const createTask = (req, res) => {
-  const task = store.create(req.body);
+const getTaskById = async (req, res, next) => {
+  try {
+    const task = await taskRepository.findById(req.params.id);
 
-  res
-    .location(`/api/v1/tasks/${task.id}`)
-    .status(201)
-    .json({
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    res.json({
       data: task,
     });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const replaceTask = (req, res) => {
-  const task = store.replace(req.params.id, req.body);
+const createTask = async (req, res, next) => {
+  try {
+    const task = await taskRepository.create(req.body);
 
-  if (!task) {
-    return res.status(404).json({
-      message: "Task not found",
-    });
+    res
+      .location(`/api/v1/tasks/${task.id}`)
+      .status(201)
+      .json({
+        data: task,
+      });
+  } catch (error) {
+    next(error);
   }
-
-  res.json({
-    data: task,
-  });
 };
 
-const updateTask = (req, res) => {
-  const task = store.update(req.params.id, req.body);
+const replaceTask = async (req, res, next) => {
+  try {
+    const task = await taskRepository.update(
+      req.params.id,
+      req.body
+    );
 
-  if (!task) {
-    return res.status(404).json({
-      message: "Task not found",
+    res.json({
+      data: task,
     });
+  } catch (error) {
+    next(error);
   }
-
-  res.json({
-    data: task,
-  });
 };
 
-const deleteTask = (req, res) => {
-  const deleted = store.remove(req.params.id);
+const updateTask = async (req, res, next) => {
+  try {
+    const task = await taskRepository.update(
+      req.params.id,
+      req.body
+    );
 
-  if (!deleted) {
-    return res.status(404).json({
-      message: "Task not found",
+    res.json({
+      data: task,
     });
+  } catch (error) {
+    next(error);
   }
+};
 
-  res.status(204).send();
+const deleteTask = async (req, res, next) => {
+  try {
+    await taskRepository.remove(req.params.id);
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getTasksByUser = async (req, res, next) => {
+  try {
+    const tasks = await taskRepository.findByUser(
+      req.params.userId
+    );
+
+    res.json({
+      data: tasks,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
@@ -119,4 +106,5 @@ module.exports = {
   replaceTask,
   updateTask,
   deleteTask,
+  getTasksByUser,
 };
