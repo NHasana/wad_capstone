@@ -3,7 +3,6 @@ const router = express.Router();
 
 const controller = require("../controllers/tasks.controller");
 
-console.log(controller);
 const validate = require("../middleware/validate");
 
 const {
@@ -73,10 +72,6 @@ router.get(
  *         description: Task tidak ditemukan
  */
 
-router.get(
-  "/user/:userId",
-  controller.getTasksByUser
-);
 
 router.get("/:id", controller.getTaskById);
 

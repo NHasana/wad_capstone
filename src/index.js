@@ -1,10 +1,11 @@
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./docs/swagger");
-
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+
 const routes = require("./routes");
 const config = require("./config");
 const tasksRoutes = require("./routes/tasks.routes");
+const swaggerSpec = require("./docs/swagger");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -17,7 +18,14 @@ app.use("/", routes);
 app.use("/api/v1/tasks", tasksRoutes);
 
 // swagger docs
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
+
+// error handler Prisma
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
@@ -27,14 +35,8 @@ app.use((req, res) => {
   });
 });
 
-// 500 handler
-app.use((err, req, res, next) => {
-  res.status(500).json({
-    status: "error",
-    message: "Internal Server Error",
-  });
-});
-
 app.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`);
+  console.log(
+    `Server running on port ${config.port}`
+  );
 });

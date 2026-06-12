@@ -10,7 +10,7 @@
     {
       "name": "WAD02-Capstone-Lab 1",
       "item": [
-        {
+        { 
           "name": "Health Check",
           "request": {
             "method": "GET",
