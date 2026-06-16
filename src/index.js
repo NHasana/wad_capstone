@@ -1,15 +1,37 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+
 const routes = require("./routes");
 const config = require("./config");
+const authRoutes = require("./routes/auth.routes");
+const tasksRoutes = require("./routes/tasks.routes");
+const swaggerSpec = require("./docs/swagger");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(express.json());
 
-// pakai semua routes
+// route lama
 app.use("/", routes);
 
-// 404 handler (kalau route tidak ada)
+// route auth
+app.use("/auth", authRoutes);
+
+// route tasks
+app.use("/api/v1/tasks", tasksRoutes);
+
+// swagger docs
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
+
+// error handler Prisma
+app.use(errorHandler);
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
@@ -17,14 +39,8 @@ app.use((req, res) => {
   });
 });
 
-// 500 handler (kalau server error)
-app.use((err, req, res, next) => {
-  res.status(500).json({
-    status: "error",
-    message: "Internal Server Error",
-  });
-});
-
 app.listen(config.port, () => {
-  console.log(`Server running on port ${config.port}`);
+  console.log(
+    `Server running on port ${config.port}`
+  );
 });
