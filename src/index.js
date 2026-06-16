@@ -3,6 +3,7 @@ const swaggerUi = require("swagger-ui-express");
 
 const routes = require("./routes");
 const config = require("./config");
+const authRoutes = require("./routes/auth.routes");
 const tasksRoutes = require("./routes/tasks.routes");
 const swaggerSpec = require("./docs/swagger");
 const errorHandler = require("./middleware/errorHandler");
@@ -13,6 +14,9 @@ app.use(express.json());
 
 // route lama
 app.use("/", routes);
+
+// route auth
+app.use("/auth", authRoutes);
 
 // route tasks
 app.use("/api/v1/tasks", tasksRoutes);

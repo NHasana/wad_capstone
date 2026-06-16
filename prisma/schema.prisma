@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Model User ───────────────────────────────────────────
 model User {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(100)
@@ -17,23 +16,21 @@ model User {
   updatedAt DateTime @updatedAt
 
   tasks Task[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
 
-// ─── Model Category ───────────────────────────────────────
 model Category {
   id        Int      @id @default(autoincrement())
   name      String   @unique @db.VarChar(100)
   color     String   @default("#6366F1") @db.VarChar(7)
   createdAt DateTime @default(now())
-
-  tasks Task[]
+  tasks     Task[]
 
   @@map("categories")
 }
 
-// ─── Model Task ───────────────────────────────────────────
 model Task {
   id          Int       @id @default(autoincrement())
   title       String    @db.VarChar(200)
@@ -43,21 +40,34 @@ model Task {
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
   userId      Int
   categoryId  Int?
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category    Category? @relation(fields: [categoryId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@index([userId, status])
-
+  @@index([categoryId], map: "tasks_categoryId_fkey")
   @@map("tasks")
 }
 
-// ─── Enum ─────────────────────────────────────────────────
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique @db.VarChar(512)
+  userId     Int
+  expiresAt  DateTime
+  isRevoked  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+
+  @@map("refresh_tokens")
+}
+
 enum Status {
   TODO
   IN_PROGRESS
