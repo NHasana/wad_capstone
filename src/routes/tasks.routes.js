@@ -1,12 +1,12 @@
 const authenticate = require("../middleware/authenticate");
 const express = require("express");
 const router = express.Router();
-
+const Joi = require("joi");
 router.use(authenticate);
 
 const controller = require("../controllers/tasks.controller");
 
-const validate = require("../middleware/validate");
+const validate = require("../middleware/validate.middleware");
 
 const {
   createTaskSchema,
@@ -76,7 +76,10 @@ router.get(
  */
 
 
-router.get("/:id", controller.getTaskById);
+router.get(
+  "/:id",
+  controller.getTaskById
+);
 
 /**
  * @swagger

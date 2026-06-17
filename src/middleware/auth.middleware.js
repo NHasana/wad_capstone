@@ -10,8 +10,7 @@ const authenticate = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // FIX: Ubah dari JWT_SECRET menjadi JWT_ACCESS_SECRET sesuai file .env
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET); 
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     req.user = decoded;
     next();
   } catch (err) {

@@ -1,18 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  getHealth,
-  getInfo,
-  echoMessage,
-} = require("../controllers/healthController");
+const healthRoutes = require("./health.routes");
+const taskRoutes = require("./tasks.routes");
+const notificationRoutes = require("./notification.routes");
 
-router.get("/health", getHealth);
-router.get("/api/info", getInfo);
-router.get("/api/echo/:msg", echoMessage);
+// public
+router.use("/", healthRoutes);
 
-router.get("/error", (req, res) => {
-  throw new Error("Test error");
-});
+// tasks
+router.use("/api/v1/tasks", taskRoutes);
+
+// notifications (UTS)
+router.use("/api/v1/notifications", notificationRoutes);
 
 module.exports = router;

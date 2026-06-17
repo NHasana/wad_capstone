@@ -9,17 +9,16 @@ const validate = (schema, source = "body") => {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
-          message: "Data yang dikirim tidak valid.",
-          details: error.details.map((detail) => ({
-            field: detail.path.join("."),
-            message: detail.message,
+          message: "Data tidak valid",
+          details: error.details.map((d) => ({
+            field: d.path.join("."),
+            message: d.message,
           })),
         },
       });
     }
 
     req[source] = value;
-
     next();
   };
 };

@@ -1,34 +1,34 @@
+require("dotenv").config();
 const express = require("express");
-const swaggerUi = require("swagger-ui-express");
-
 const routes = require("./routes");
 const config = require("./config");
+
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
+
 const authRoutes = require("./routes/auth.routes");
 const tasksRoutes = require("./routes/tasks.routes");
-const swaggerSpec = require("./docs/swagger");
+const notificationRoutes = require("./routes/notification.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(express.json());
 
-// route lama
+// Routes
 app.use("/", routes);
-
-// route auth
 app.use("/auth", authRoutes);
-
-// route tasks
 app.use("/api/v1/tasks", tasksRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
-// swagger docs
+// Swagger
 app.use(
-  "/api/docs",
+  "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec)
 );
 
-// error handler Prisma
+// Error handler
 app.use(errorHandler);
 
 // 404 handler
@@ -40,7 +40,5 @@ app.use((req, res) => {
 });
 
 app.listen(config.port, () => {
-  console.log(
-    `Server running on port ${config.port}`
-  );
+  console.log(`Server running on port ${config.port}`);
 });
