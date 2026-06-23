@@ -1,12 +1,25 @@
 const prisma = require("../config/prisma");
 
-const findMany = async () => {
-  return prisma.task.findMany({
+const findMany = async ({ userId, status, priority, sort, order, limit, offset } = {}) => {
+  const where = {};
+  if (userId) where.userId = Number(userId);
+  if (status) where.status = status;
+  if (priority) where.priority = priority;
+
+  const tasks = await prisma.task.findMany({
+    where,
     include: {
       user: true,
       category: true,
     },
+    orderBy: sort ? { [sort]: order || 'asc' } : { createdAt: 'desc' },
+    take: limit ? Number(limit) : 10,
+    skip: offset ? Number(offset) : 0,
   });
+
+  const total = await prisma.task.count({ where });
+
+  return { data: tasks, total };
 };
 
 const findById = async (id) => {

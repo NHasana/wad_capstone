@@ -32,7 +32,7 @@ const login = async ({ email, password }) => {
   }
 
   const accessToken = jwt.sign(
-    { id: user.id, email: user.email },
+    { userId: user.id, email: user.email, role: user.role }, // ← tambah role
     config.jwt.accessSecret,
     { expiresIn: config.jwt.accessExpiresIn }
   );
@@ -52,7 +52,6 @@ const login = async ({ email, password }) => {
   return { accessToken, refreshToken, user };
 };
 
-// Fungsi refresh dan logout biarkan tetap ada di bawah sini...
 const refresh = async (tokenString) => {
   const storedToken = await refreshTokenRepository.findByToken(tokenString);
   if (storedToken && storedToken.isRevoked) {
@@ -62,9 +61,25 @@ const refresh = async (tokenString) => {
   if (!storedToken) throw new Error("INVALID_REFRESH_TOKEN");
 
   await refreshTokenRepository.revoke(storedToken.id);
-  const accessToken = jwt.sign({ id: storedToken.user.id, email: storedToken.user.email }, config.jwt.accessSecret, { expiresIn: config.jwt.accessExpiresIn });
-  const newRefreshToken = jwt.sign({ id: storedToken.user.id }, config.jwt.refreshSecret, { expiresIn: config.jwt.refreshExpiresIn });
-  await refreshTokenRepository.create({ token: newRefreshToken, userId: storedToken.user.id, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
+
+  const accessToken = jwt.sign(
+    { userId: storedToken.user.id, email: storedToken.user.email, role: storedToken.user.role }, // ← tambah role
+    config.jwt.accessSecret,
+    { expiresIn: config.jwt.accessExpiresIn }
+  );
+
+  const newRefreshToken = jwt.sign(
+    { id: storedToken.user.id },
+    config.jwt.refreshSecret,
+    { expiresIn: config.jwt.refreshExpiresIn }
+  );
+
+  await refreshTokenRepository.create({
+    token: newRefreshToken,
+    userId: storedToken.user.id,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
   return { accessToken, refreshToken: newRefreshToken };
 };
 

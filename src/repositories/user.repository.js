@@ -22,8 +22,21 @@ const create = async (data) => {
   });
 };
 
+const findAll = async () => {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+};
+
 module.exports = {
   findById,
   findByEmail,
   create,
+  findAll,
 };

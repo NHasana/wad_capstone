@@ -2,10 +2,29 @@ const taskRepository = require("../repositories/task.repository");
 
 const getTasks = async (req, res, next) => {
   try {
-    const tasks = await taskRepository.findMany();
+    const { status, priority, sort, order, limit, offset } = req.query;
+
+    // User biasa hanya lihat task miliknya; Admin lihat semua
+    const userId = req.user.role === 'ADMIN' ? undefined : req.user.userId;
+
+    const { data, total } = await taskRepository.findMany({
+      userId, status, priority, sort, order, limit, offset
+    });
+
+    const numLimit = Number(limit) || 10;
+    const numOffset = Number(offset) || 0;
 
     res.json({
-      data: tasks,
+      data,
+      pagination: {
+        total,
+        limit: numLimit,
+        offset: numOffset,
+        hasNext: numOffset + numLimit < total,
+        hasPrev: numOffset > 0,
+        nextOffset: numOffset + numLimit < total ? numOffset + numLimit : null,
+        prevOffset: numOffset > 0 ? Math.max(0, numOffset - numLimit) : null,
+      },
     });
   } catch (error) {
     next(error);
@@ -14,7 +33,7 @@ const getTasks = async (req, res, next) => {
 
 const getTaskById = async (req, res, next) => {
   try {
-    const task = await taskRepository.findById(req.params.id);
+    const task = req.task || await taskRepository.findById(req.params.id);
 
     if (!task) {
       return res.status(404).json({
@@ -32,7 +51,11 @@ const getTaskById = async (req, res, next) => {
 
 const createTask = async (req, res, next) => {
   try {
-    const task = await taskRepository.create(req.body);
+    // Gunakan userId dari token — jangan percaya userId dari request body!
+    const task = await taskRepository.create({
+      ...req.body,
+      userId: req.user.userId,
+    });
 
     res
       .location(`/api/v1/tasks/${task.id}`)

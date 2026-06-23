@@ -8,16 +8,16 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(100)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tasks         Task[]
-  refreshTokens RefreshToken[]
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(100)
+  email         String         @unique @db.VarChar(255)
+  password      String         @db.VarChar(255)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  role          Role           @default(USER)
   notifications Notification[]
+  refreshTokens RefreshToken[]
+  tasks         Task[]
 
   @@map("users")
 }
@@ -33,21 +33,19 @@ model Category {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(200)
-  description String?   @db.Text
-  status      Status    @default(TODO)
-  priority    Priority  @default(MEDIUM)
-  dueDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  userId      Int
-  categoryId  Int?
-
-  category Category? @relation(fields: [categoryId], references: [id])
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  notifications Notification[] // 🔥 INI TAMBAHAN WAJIB
+  id            Int            @id @default(autoincrement())
+  title         String         @db.VarChar(200)
+  description   String?        @db.Text
+  status        Status         @default(TODO)
+  priority      Priority       @default(MEDIUM)
+  dueDate       DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userId        Int
+  categoryId    Int?
+  notifications Notification[]
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -63,8 +61,7 @@ model RefreshToken {
   expiresAt DateTime
   isRevoked Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userId])
@@ -72,28 +69,21 @@ model RefreshToken {
 }
 
 model Notification {
-  id             Int      @id @default(autoincrement())
-  title          String   @db.VarChar(200)
-  message        String   @db.Text
-  isRead         Boolean  @default(false)
-  type           String   @db.VarChar(20) // INFO | WARNING | SUCCESS
-  userId         Int
-  relatedTaskId  Int?
-  createdAt      DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task Task? @relation(fields: [relatedTaskId], references: [id], onDelete: SetNull)
+  id            Int      @id @default(autoincrement())
+  title         String   @db.VarChar(200)
+  message       String   @db.Text
+  type          String   @db.VarChar(20)
+  isRead        Boolean  @default(false)
+  userId        Int
+  relatedTaskId Int?
+  createdAt     DateTime @default(now())
+  task          Task?    @relation(fields: [relatedTaskId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
   @@index([relatedTaskId])
   @@map("notifications")
-}
-
-enum NotificationType {
-  INFO
-  WARNING
-  SUCCESS
 }
 
 enum Status {
@@ -106,4 +96,9 @@ enum Priority {
   LOW
   MEDIUM
   HIGH
+}
+
+enum Role {
+  USER
+  ADMIN
 }

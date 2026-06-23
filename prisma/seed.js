@@ -1,16 +1,19 @@
 const { PrismaClient } = require("@prisma/client");
+const argon2 = require("argon2");
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Membersihkan data lama di database...");
   
-  // 0. HAPUS DATA LAMA (Urutan harus benar: dari tabel anak ke tabel induk agar tidak bentrok Foreign Key)
   await prisma.notification.deleteMany();
   await prisma.task.deleteMany();
   await prisma.user.deleteMany();
   await prisma.category.deleteMany();
 
   console.log("Mulai memasukkan data seed baru...");
+
+  // Hash password dulu
+  const hashedPassword = await argon2.hash("password123");
 
   // 1. Seed Categories
   const work = await prisma.category.create({
@@ -30,7 +33,8 @@ async function main() {
     data: {
       name: "Nung",
       email: "nung@example.com",
-      password: "password123",
+      password: hashedPassword,
+      role: "USER",
     },
   });
 
@@ -38,11 +42,21 @@ async function main() {
     data: {
       name: "Budi",
       email: "budi@example.com",
-      password: "password123",
+      password: hashedPassword,
+      role: "USER",
     },
   });
 
-  // 3. Seed Tasks (6 Task sesuai standar UTS)
+  const admin = await prisma.user.create({
+    data: {
+      name: "Admin",
+      email: "admin@example.com",
+      password: hashedPassword,
+      role: "ADMIN",
+    },
+  });
+
+  // 3. Seed Tasks
   const tasks = await prisma.task.createMany({
     data: [
       {
@@ -90,7 +104,7 @@ async function main() {
     ],
   });
 
-  // 4. Seed Model Tambahan: Notification (5 data sesuai standar UTS)
+  // 4. Seed Notifications
   await prisma.notification.createMany({
     data: [
       {
