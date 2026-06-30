@@ -1,10 +1,25 @@
 const prisma = require("../config/prisma");
 
-const findMany = async ({ userId, status, priority, sort, order, limit, offset } = {}) => {
+const normalizeTask = (data) => ({
+  ...data,
+  status: data.status ? data.status.toUpperCase() : undefined,
+  priority: data.priority ? data.priority.toUpperCase() : undefined,
+});
+
+const findMany = async ({
+  userId,
+  status,
+  priority,
+  sort,
+  order,
+  limit,
+  offset,
+} = {}) => {
   const where = {};
+
   if (userId) where.userId = Number(userId);
-  if (status) where.status = status;
-  if (priority) where.priority = priority;
+  if (status) where.status = status.toUpperCase();
+  if (priority) where.priority = priority.toUpperCase();
 
   const tasks = await prisma.task.findMany({
     where,
@@ -12,7 +27,9 @@ const findMany = async ({ userId, status, priority, sort, order, limit, offset }
       user: true,
       category: true,
     },
-    orderBy: sort ? { [sort]: order || 'asc' } : { createdAt: 'desc' },
+    orderBy: sort
+      ? { [sort]: order || "asc" }
+      : { createdAt: "desc" },
     take: limit ? Number(limit) : 10,
     skip: offset ? Number(offset) : 0,
   });
@@ -36,7 +53,7 @@ const findById = async (id) => {
 
 const create = async (data) => {
   return prisma.task.create({
-    data,
+    data: normalizeTask(data),
   });
 };
 
@@ -45,7 +62,7 @@ const update = async (id, data) => {
     where: {
       id: Number(id),
     },
-    data,
+    data: normalizeTask(data),
   });
 };
 
