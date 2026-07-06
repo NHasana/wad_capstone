@@ -32,7 +32,7 @@ const getTaskById = async (req, res, next) => {
 
 const createTask = async (req, res, next) => {
   try {
-    const task = await taskRepository.create(req.body);
+    const task = await taskRepository.create({ ...req.body, userId: req.user.id });
 
     res
       .location(`/api/v1/tasks/${task.id}`)
