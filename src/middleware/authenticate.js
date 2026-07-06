@@ -10,9 +10,12 @@ const authenticate = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // FIX: Ubah dari JWT_SECRET menjadi JWT_ACCESS_SECRET sesuai file .env
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET); 
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    req.user = {
+      userId: decoded.userId,   // ← eksplisit
+      email: decoded.email,
+      role: decoded.role,       // ← tambah role
+    };
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });

@@ -1,4 +1,7 @@
 const authenticate = require("../middleware/authenticate");
+const authorize = require("../middleware/authorize");
+const { checkTaskOwnership } = require("../middleware/checkOwnership");
+const { sanitizeBody } = require("../middleware/sanitize");
 const express = require("express");
 const router = express.Router();
 const Joi = require("joi");
@@ -74,10 +77,9 @@ router.get(
  *       404:
  *         description: Task tidak ditemukan
  */
-
-
 router.get(
   "/:id",
+  checkTaskOwnership,
   controller.getTaskById
 );
 
@@ -111,6 +113,8 @@ router.get(
 router.post(
   "/",
   validate(createTaskSchema, "body"),
+  sanitizeBody,                     // ← Langkah 12
+  authorize('USER', 'ADMIN'),
   controller.createTask
 );
 
@@ -153,7 +157,9 @@ router.post(
  */
 router.put(
   "/:id",
+  checkTaskOwnership,
   validate(replaceTaskSchema, "body"),
+  sanitizeBody,                     // ← Langkah 12
   controller.replaceTask
 );
 
@@ -192,7 +198,9 @@ router.put(
  */
 router.patch(
   "/:id",
+  checkTaskOwnership,
   validate(updateTaskSchema, "body"),
+  sanitizeBody,                     // ← Langkah 12
   controller.updateTask
 );
 
@@ -214,6 +222,10 @@ router.patch(
  *       404:
  *         description: Task tidak ditemukan
  */
-router.delete("/:id", controller.deleteTask);
+router.delete(
+  "/:id",
+  checkTaskOwnership,
+  controller.deleteTask
+);
 
 module.exports = router;
