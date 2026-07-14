@@ -2,10 +2,19 @@ const repo = require("../repositories/notification.repository");
 
 const getAll = async (req, res, next) => {
   try {
-    const data = await repo.findAll();
+    const data = await repo.findByUser(req.user.userId);
     res.status(200).json({ status: "success", data });
   } catch (err) {
-    next(err); // Diteruskan ke errorHandler Prisma kamu
+    next(err);
+  }
+};
+
+const getUnreadCount = async (req, res, next) => {
+  try {
+    const count = await repo.countUnread(req.user.userId);
+    res.status(200).json({ status: "success", data: { count } });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -38,7 +47,6 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    // Cek dulu apakah datanya eksis sebelum di-update
     const check = await repo.findById(Number(req.params.id));
     if (!check) {
       return res.status(404).json({
@@ -52,6 +60,15 @@ const update = async (req, res, next) => {
 
     const data = await repo.update(Number(req.params.id), req.body);
     res.status(200).json({ status: "success", data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const markAllAsRead = async (req, res, next) => {
+  try {
+    await repo.markAllRead(req.user.userId);
+    res.status(200).json({ status: "success", message: "Semua notifikasi ditandai sudah dibaca" });
   } catch (err) {
     next(err);
   }
@@ -71,9 +88,9 @@ const remove = async (req, res, next) => {
     }
 
     await repo.remove(Number(req.params.id));
-    res.status(200).json({ 
-      status: "success", 
-      message: "Notifikasi berhasil dihapus" 
+    res.status(200).json({
+      status: "success",
+      message: "Notifikasi berhasil dihapus"
     });
   } catch (err) {
     next(err);
@@ -82,8 +99,10 @@ const remove = async (req, res, next) => {
 
 module.exports = {
   getAll,
+  getUnreadCount,
   getById,
   create,
   update,
+  markAllAsRead,
   remove,
 };

@@ -5,6 +5,7 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   appName: process.env.APP_NAME || 'WAD API',
   version: process.env.APP_VERSION || '1.0.0',
+  allowedOrigins: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173'],
 
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET,

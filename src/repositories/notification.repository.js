@@ -8,7 +8,24 @@ const findAll = async () => {
         select: { id: true, name: true, email: true }
       },
       task: true
-    }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+};
+
+const findByUser = async (userId) => {
+  return await prisma.notification.findMany({
+    where: { userId: parseInt(userId) },
+    include: {
+      task: true
+    },
+    orderBy: { createdAt: "desc" }
+  });
+};
+
+const countUnread = async (userId) => {
+  return await prisma.notification.count({
+    where: { userId: parseInt(userId), isRead: false }
   });
 };
 
@@ -43,6 +60,13 @@ const update = async (id, data) => {
   });
 };
 
+const markAllRead = async (userId) => {
+  return await prisma.notification.updateMany({
+    where: { userId: parseInt(userId), isRead: false },
+    data: { isRead: true }
+  });
+};
+
 const remove = async (id) => {
   return await prisma.notification.delete({
     where: { id: parseInt(id) }
@@ -51,8 +75,11 @@ const remove = async (id) => {
 
 module.exports = {
   findAll,
+  findByUser,
+  countUnread,
   findById,
   create,
   update,
+  markAllRead,
   remove
 };

@@ -16,13 +16,37 @@ const notificationValidator = require("../validators/notification.validator");
  * @swagger
  * /notifications:
  *   get:
- *     summary: Ambil semua notification
+ *     summary: Ambil semua notification milik user yang login
  *     tags: [Notifications]
  *     responses:
  *       200:
  *         description: Berhasil mengambil data notification
  */
 router.get("/", authenticate, notificationController.getAll);
+
+/**
+ * @swagger
+ * /notifications/unread-count:
+ *   get:
+ *     summary: Ambil jumlah notifikasi yang belum dibaca
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: Berhasil mengambil jumlah unread
+ */
+router.get("/unread-count", authenticate, notificationController.getUnreadCount);
+
+/**
+ * @swagger
+ * /notifications/mark-all-read:
+ *   put:
+ *     summary: Tandai semua notifikasi sebagai sudah dibaca
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: Semua notifikasi ditandai sudah dibaca
+ */
+router.put("/mark-all-read", authenticate, notificationController.markAllAsRead);
 
 /**
  * @swagger

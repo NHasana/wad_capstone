@@ -1,4 +1,5 @@
 const taskRepository = require("../repositories/task.repository");
+const notificationRepository = require("../repositories/notification.repository");
 
 const getTasks = async (req, res, next) => {
   try {
@@ -69,20 +70,20 @@ const getTaskById = async (req, res, next) => {
 
 const createTask = async (req, res, next) => {
   try {
-    console.log("==================================");
-    console.log("🚀 CREATE TASK");
-    console.log("USER :", req.user);
-    console.log("BODY :", req.body);
-
     const task = await taskRepository.create({
       ...req.body,
       userId: req.user.userId,
     });
 
-    console.log("✅ TASK BERHASIL DIBUAT");
-    console.log(task);
-
     const io = req.app.get("io");
+
+    const notif = await notificationRepository.create({
+      title: "Task Berhasil Dibuat",
+      message: `Task "${task.title}" berhasil dibuat.`,
+      type: "SUCCESS",
+      userId: req.user.userId,
+      relatedTaskId: task.id,
+    });
 
     if (io) {
       io.to("tasks:global").emit("task:created", {
@@ -91,11 +92,7 @@ const createTask = async (req, res, next) => {
 
       io.to(`user:${req.user.userId}`).emit(
         "notification",
-        {
-          type: "SUCCESS",
-          title: "Task Berhasil Dibuat",
-          message: `Task "${task.title}" berhasil dibuat.`,
-        }
+        notif
       );
     }
 
@@ -106,7 +103,6 @@ const createTask = async (req, res, next) => {
         data: task,
       });
   } catch (error) {
-    console.log("❌ CREATE TASK ERROR");
     console.error(error);
     next(error);
   }
@@ -114,33 +110,36 @@ const createTask = async (req, res, next) => {
 
 const replaceTask = async (req, res, next) => {
   try {
-    console.log("==================================");
-    console.log("🔄 REPLACE TASK");
-    console.log("ID :", req.params.id);
-    console.log("USER :", req.user);
-    console.log("BODY :", req.body);
-
     const task = await taskRepository.update(
       req.params.id,
       req.body
     );
 
-    console.log("✅ TASK BERHASIL DIREPLACE");
-    console.log(task);
-
     const io = req.app.get("io");
+
+    const notif = await notificationRepository.create({
+      title: "Task Diperbarui",
+      message: `Task "${task.title}" telah diperbarui.`,
+      type: "INFO",
+      userId: task.userId,
+      relatedTaskId: task.id,
+    });
 
     if (io) {
       io.to("tasks:global").emit("task:updated", {
         task,
       });
+
+      io.to(`user:${task.userId}`).emit(
+        "notification",
+        notif
+      );
     }
 
     res.json({
       data: task,
     });
   } catch (error) {
-    console.log("❌ REPLACE TASK ERROR");
     console.error(error);
     next(error);
   }
@@ -148,33 +147,36 @@ const replaceTask = async (req, res, next) => {
 
 const updateTask = async (req, res, next) => {
   try {
-    console.log("==================================");
-    console.log("✏ UPDATE TASK");
-    console.log("ID :", req.params.id);
-    console.log("USER :", req.user);
-    console.log("BODY :", req.body);
-
     const task = await taskRepository.update(
       req.params.id,
       req.body
     );
 
-    console.log("✅ TASK BERHASIL DIUPDATE");
-    console.log(task);
-
     const io = req.app.get("io");
+
+    const notif = await notificationRepository.create({
+      title: "Task Diperbarui",
+      message: `Task "${task.title}" telah diperbarui.`,
+      type: "INFO",
+      userId: task.userId,
+      relatedTaskId: task.id,
+    });
 
     if (io) {
       io.to("tasks:global").emit("task:updated", {
         task,
       });
+
+      io.to(`user:${task.userId}`).emit(
+        "notification",
+        notif
+      );
     }
 
     res.json({
       data: task,
     });
   } catch (error) {
-    console.log("❌ UPDATE TASK ERROR");
     console.error(error);
     next(error);
   }
@@ -182,15 +184,28 @@ const updateTask = async (req, res, next) => {
 
 const deleteTask = async (req, res, next) => {
   try {
-    console.log("==================================");
-    console.log("🗑 DELETE TASK");
-    console.log("ID :", req.params.id);
+    const existing = await taskRepository.findById(req.params.id);
 
     await taskRepository.remove(req.params.id);
 
-    console.log("✅ TASK BERHASIL DIHAPUS");
-
     const io = req.app.get("io");
+
+    if (existing) {
+      const notif = await notificationRepository.create({
+        title: "Task Dihapus",
+        message: `Task "${existing.title}" telah dihapus.`,
+        type: "WARNING",
+        userId: existing.userId,
+        relatedTaskId: null,
+      });
+
+      if (io) {
+        io.to(`user:${existing.userId}`).emit(
+          "notification",
+          notif
+        );
+      }
+    }
 
     if (io) {
       io.to("tasks:global").emit("task:deleted", {
@@ -200,7 +215,6 @@ const deleteTask = async (req, res, next) => {
 
     res.status(204).send();
   } catch (error) {
-    console.log("❌ DELETE TASK ERROR");
     console.error(error);
     next(error);
   }
